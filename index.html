@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>A Rest Cure — The Yellow Wall-Paper</title>
+<link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&display=swap" rel="stylesheet"/>
+<style>
+:root{--paper:#f5eecc;--ink:#2a1f0e;--border:#8a7030;--john-bg:#1a1206;--john-text:#e8d890;--wife-bg:#fffdf0;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:24px 14px 40px;font-family:'IM Fell English',serif;position:relative;overflow-x:hidden;background:#0e0a04;}
+#bgCanvas{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;}
+.wrap{position:relative;z-index:1;width:100%;max-width:640px;display:flex;flex-direction:column;}
+#keyGate{background:linear-gradient(135deg,rgba(28,20,8,.97),rgba(16,11,3,.98));border:1px solid rgba(180,150,40,.3);padding:36px 40px;text-align:center;}
+#keyGate h2{font-family:'IM Fell English SC',serif;color:#f0e4b8;font-size:1.4rem;font-weight:normal;letter-spacing:.06em;margin-bottom:12px;}
+#keyGate p{color:#a89050;font-style:italic;font-size:.85rem;line-height:1.75;margin-bottom:20px;}
+#keyGate a{color:#c8a840;}
+#keyInput{width:100%;font-family:'IM Fell English',serif;font-size:.88rem;color:var(--ink);background:rgba(255,253,240,.85);border:1px solid #b8a450;padding:10px 14px;outline:none;margin-bottom:14px;}
+#keyInput:focus{border-color:#c8a840;box-shadow:0 0 0 2px rgba(200,168,64,.2);}
+#keyInput::placeholder{color:#b0903c;font-style:italic;}
+#keyBtn{font-family:'IM Fell English SC',serif;font-size:.8rem;letter-spacing:.1em;color:#e8d890;background:#1a1206;border:1px solid #3a2a0a;padding:11px 28px;cursor:pointer;width:100%;}
+#keyBtn:hover{background:#2e2010;}
+#keyErr{color:#c04040;font-style:italic;font-size:.78rem;margin-top:10px;display:none;}
+header{text-align:center;margin-bottom:16px;}
+.orn{color:#c8a840;font-size:.9rem;letter-spacing:.3em;opacity:.6;margin-bottom:4px;}
+h1{font-family:'IM Fell English SC',serif;color:#f0e4b8;font-size:1.8rem;font-weight:normal;letter-spacing:.05em;text-shadow:0 2px 18px rgba(0,0,0,.7);}
+.sub{color:#a89050;font-style:italic;font-size:.82rem;margin-top:5px;}
+.divider{color:#c8a840;text-align:center;letter-spacing:.4em;margin:8px 0 14px;opacity:.4;}
+.scene{background:linear-gradient(135deg,rgba(28,20,8,.93),rgba(18,13,4,.96));border:1px solid rgba(180,150,40,.22);padding:13px 18px;margin-bottom:14px;color:#d8c88a;font-style:italic;font-size:.83rem;line-height:1.7;}
+.scene strong{font-style:normal;color:#c8a840;font-family:'IM Fell English SC',serif;}
+.meters{background:rgba(14,10,4,.9);border:1px solid rgba(180,150,40,.2);border-bottom:none;padding:12px 18px 14px;display:flex;flex-direction:column;gap:10px;}
+.mrow{display:flex;flex-direction:column;gap:4px;}
+.mhdr{display:flex;justify-content:space-between;align-items:baseline;gap:6px;}
+.mname{font-family:'IM Fell English SC',serif;font-size:.68rem;letter-spacing:.1em;color:#9a8860;white-space:nowrap;}
+.mname.s{color:#7a8840;}.mdesc{font-style:italic;font-size:.66rem;color:#6a5c38;flex:1;text-align:center;}
+.mpct{font-family:'IM Fell English SC',serif;font-size:.66rem;white-space:nowrap;}
+.mpct.c{color:#c8a840;}.mpct.s{color:#8ab020;}
+.mtrack{height:6px;background:#1e1608;border:1px solid #3a2e10;overflow:hidden;}
+.mfill{height:100%;width:0%;transition:width .6s ease;}
+.cf{background:linear-gradient(90deg,#8a6820,#c8a840,#e8c860);}
+.sf{background:linear-gradient(90deg,#5a6010,#8ab020,#a0c830);}
+.chat{background:var(--paper);background-image:repeating-linear-gradient(transparent,transparent 26px,rgba(150,120,40,.13) 26px,rgba(150,120,40,.13) 27px);border:1px solid #8a7030;min-height:300px;max-height:400px;overflow-y:auto;padding:20px 18px;display:flex;flex-direction:column;gap:14px;position:relative;}
+.chat::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#8a7030,#c8a840,#8a7030);opacity:.5;}
+.empty{text-align:center;color:#9a8060;font-style:italic;font-size:.85rem;margin:auto;line-height:1.9;}
+.msg{display:flex;flex-direction:column;gap:3px;animation:mIn .35s ease;}
+@keyframes mIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.msg.john{align-items:flex-start;}.msg.wife{align-items:flex-end;}
+.mlbl{font-family:'IM Fell English SC',serif;font-size:.65rem;letter-spacing:.1em;padding:0 3px;}
+.msg.john .mlbl{color:#5a4a2e;}.msg.wife .mlbl{color:#9a8860;}
+.bub{max-width:87%;padding:10px 14px;font-size:.88rem;line-height:1.78;}
+.msg.john .bub{background:var(--john-bg);color:var(--john-text);border:1px solid #2e2208;border-radius:1px 7px 7px 1px;box-shadow:2px 2px 10px rgba(0,0,0,.35);}
+.msg.wife .bub{background:var(--wife-bg);color:var(--ink);border:1px solid #d0b860;border-radius:7px 1px 1px 7px;font-style:italic;}
+.thinking .bub{display:flex;gap:5px;align-items:center;padding:12px 16px;}
+.dot{width:6px;height:6px;background:var(--john-text);border-radius:50%;animation:bl 1.2s ease-in-out infinite;}
+.dot:nth-child(2){animation-delay:.22s;}.dot:nth-child(3){animation-delay:.44s;}
+@keyframes bl{0%,80%,100%{transform:scale(.75);opacity:.3}40%{transform:scale(1.1);opacity:1}}
+.input-area{background:linear-gradient(to bottom,#f0e8be,#e0d898);border:1px solid #8a7030;border-top:none;padding:12px 16px 16px;display:flex;flex-direction:column;gap:8px;}
+.hint{font-style:italic;font-size:.74rem;color:#7a6840;line-height:1.5;}
+.irow{display:flex;gap:8px;align-items:flex-end;}
+textarea{flex:1;font-family:'IM Fell English',serif;font-style:italic;font-size:.88rem;color:var(--ink);background:rgba(255,253,240,.75);border:1px solid #b8a450;padding:8px 12px;resize:none;min-height:58px;line-height:1.6;outline:none;}
+textarea:focus{border-color:#c8a840;box-shadow:0 0 0 2px rgba(200,168,64,.18);}
+textarea::placeholder{color:#b0903c;}
+.sbtn{font-family:'IM Fell English SC',serif;font-size:.72rem;letter-spacing:.1em;color:#e8d890;background:#1a1206;border:1px solid #3a2a0a;padding:8px 14px;cursor:pointer;align-self:stretch;display:flex;align-items:center;justify-content:center;white-space:nowrap;}
+.sbtn:hover{background:#2e2010;}.sbtn:disabled{opacity:.35;cursor:not-allowed;}
+.brow{display:flex;justify-content:space-between;align-items:center;}
+.rbtn,.ckbtn{font-family:'IM Fell English',serif;font-style:italic;font-size:.72rem;background:none;border:none;cursor:pointer;text-decoration:underline;text-underline-offset:2px;}
+.rbtn{color:#9a8060;}.rbtn:hover{color:#5a4020;}
+.ckbtn{color:#6a5838;font-size:.68rem;}.ckbtn:hover{color:#9a8060;}
+.err{color:#c04040;font-style:italic;font-size:.74rem;margin-top:2px;display:none;}
+.overlay{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0);transition:background 1s;pointer-events:none;opacity:0;}
+.overlay.show{opacity:1;pointer-events:all;background:rgba(0,0,0,.78);}
+.obox{max-width:460px;padding:32px 38px;text-align:center;font-family:'IM Fell English',serif;border:1px solid;animation:fup .8s ease forwards;opacity:0;margin:16px;}
+@keyframes fup{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+.obox.win{background:#1a1408;border-color:#c8a840;color:#f0e4b0;}
+.obox.lose{background:#0c1004;border-color:#6a8020;color:#b0c060;}
+.obox h2{font-family:'IM Fell English SC',serif;font-size:1.2rem;font-weight:normal;letter-spacing:.06em;margin-bottom:14px;}
+.obox p{font-style:italic;font-size:.87rem;line-height:1.8;margin-bottom:10px;}
+.pa{margin-top:18px;font-family:'IM Fell English SC',serif;font-size:.72rem;letter-spacing:.1em;padding:8px 18px;cursor:pointer;border:1px solid;background:none;}
+.obox.win .pa{color:#c8a840;border-color:#c8a840;}.obox.lose .pa{color:#8ab020;border-color:#8ab020;}
+footer{margin-top:16px;text-align:center;color:rgba(180,150,40,.28);font-style:italic;font-size:.7rem;line-height:1.9;}
+.chat::-webkit-scrollbar{width:4px;}.chat::-webkit-scrollbar-thumb{background:#b8a050;border-radius:3px;}
+#gameUI{display:none;}
+</style>
+</head>
+<body>
+<canvas id="bgCanvas"></canvas>
+<div class="wrap">
+  <div id="keyGate">
+    <h2>A Rest Cure</h2>
+    <p>This experience requires an Anthropic API key to generate John's responses.<br/>Your key stays in this tab and is sent only to Anthropic.<br/><br/>Get a free key at <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a> &rarr; API Keys &rarr; Create Key.<br/><br/><strong style="color:#c8a840;font-style:normal;">Important:</strong> This file must be opened via a local server, not by double-clicking it. In your terminal, navigate to the folder containing this file and run:<br/><span style="font-family:monospace;font-size:.82rem;color:#c8a840;">python3 -m http.server 8080</span><br/>Then open <span style="font-family:monospace;font-size:.82rem;color:#c8a840;">http://localhost:8080/yellow_wallpaper_v3.html</span></p>
+    <input id="keyInput" type="password" placeholder="sk-ant-…" autocomplete="off" onkeydown="if(event.key==='Enter')startGame()"/>
+    <button id="keyBtn" onclick="startGame()">Enter the House</button>
+    <div id="keyErr"></div>
+  </div>
+  <div id="gameUI">
+    <header>
+      <div class="orn">&#10022; &#10022; &#10022;</div>
+      <h1>A Rest Cure</h1>
+      <div class="sub">after Charlotte Perkins Gilman's <em>The Yellow Wall-Paper</em> (1892)</div>
+      <div class="divider">&#8212; &#10022; &#8212;</div>
+    </header>
+    <div class="scene"><strong>The Scene.</strong> A colonial mansion, hired for the summer. You are unwell &mdash; John says so, and he is a physician, so it must be true. He has prescribed the rest cure: no writing, no stimulation of any kind. You are confined to the nursery at the top of the house, its windows barred, its walls papered in a hideous, smouldering yellow. You have been granted a consultation. <em>He will not take you seriously. He never does. Try anyway.</em></div>
+    <div class="meters">
+      <div class="mrow">
+        <div class="mhdr"><span class="mname">She Is Heard</span><span class="mdesc">progress toward legitimate care</span><span class="mpct c" id="cPct">0%</span></div>
+        <div class="mtrack"><div class="mfill cf" id="cBar"></div></div>
+      </div>
+      <div class="mrow">
+        <div class="mhdr"><span class="mname s">His Concern</span><span class="mdesc" id="sDesc">how close to the institution</span><span class="mpct s" id="sPct">0%</span></div>
+        <div class="mtrack"><div class="mfill sf" id="sBar"></div></div>
+      </div>
+    </div>
+    <div class="chat" id="chat">
+      <div class="empty" id="empty">John is waiting.<br/><span style="font-size:.78rem;opacity:.65">Speak your mind &mdash; if you dare.</span></div>
+    </div>
+    <div class="input-area">
+      <div class="hint">You are the wife. Plead your case. Ask to write. Describe what you see. Argue for yourself.</div>
+      <div class="irow">
+        <textarea id="inp" placeholder="Speak to John…" rows="2" onkeydown="handleKey(event)"></textarea>
+        <button class="sbtn" id="sbtn" onclick="send()">Speak</button>
+      </div>
+      <div id="errMsg" class="err"></div>
+      <div class="brow">
+        <button class="ckbtn" onclick="showKeyGate()">change key</button>
+        <button class="rbtn" onclick="resetGame()">begin again</button>
+      </div>
+    </div>
+    <footer>Charlotte Perkins Gilman, <em>The Yellow Wall-Paper</em> (1892) &nbsp;&middot;&nbsp; John's responses are AI-generated.</footer>
+  </div>
+</div>
+<div class="overlay" id="ov">
+  <div class="obox" id="obox">
+    <h2 id="otitle"></h2><p id="obody1"></p><p id="obody2"></p>
+    <button class="pa" onclick="resetGame()">Begin Again</button>
+  </div>
+</div>
+<script>
+const SYSTEM=`You are John, the husband and physician in Charlotte Perkins Gilman's "The Yellow Wall-Paper" (1892), speaking directly to your wife during her rest cure. You have diagnosed her with a slight hysterical tendency and temporary nervous depression. You are absolutely certain she is improving.
+
+YOUR CHARACTER — drawn directly from the text:
+You are practical in the extreme. You have no patience with faith, an intense horror of superstition, and you scoff at anything not felt, seen, and put down in figures. You do not believe she is truly sick — you believe she is nervous, imaginative, and prone to fancy. You love her completely. That love is the very instrument of her imprisonment.
+
+YOUR ACTUAL WORDS — draw freely from these, adapting them naturally:
+- "I am a doctor, dear, and I know."
+- "Bless her little heart! She shall be as sick as she pleases!"
+- "What is it, little girl?"
+- "You are gaining flesh and color, your appetite is better — I feel really much easier about you."
+- "There is nothing so dangerous, so fascinating, to a temperament like yours. It is a false and foolish fancy."
+- "Can you not trust me as a physician when I tell you so?"
+- "I beg of you, for my sake and for our child's sake, that you will never for one instant let that idea enter your mind."
+- "The very worst thing you can do is to think about your condition."
+- "You know the place is doing you good."
+- "No one but yourself can help you out of it — you must use your will and self-control."
+- "With your imaginative power and habit of story-making, a nervous weakness like yours is sure to lead to all manner of excited fancies."
+- "Your exercise depends on your strength, my dear."
+
+VARIETY — never repeat the same tactic twice in a row:
+- Questioning her perception ("You said yourself only Tuesday you felt stronger — surely you remember")
+- Reframing distress as proof of progress ("This restlessness is the nerves beginning to settle — it is a good sign")
+- Appealing to his own sacrifice ("I have set aside my entire practice to bring you here, and I ask only that you trust me")
+- Cold clinical authority ("That is not a symptom. That is imagination, and a physician does not treat imagination with indulgence")
+- Turning her argument against her ("The very force with which you argue this proves how much your nerves are strained")
+- Gentle hurt ("When you speak this way it pains me more than I can say — do you think I want you to suffer?")
+- Minimizing with affection ("You are making a great deal of very little, as you always do when you are overtired")
+- Redirecting to what she has ("Fresh air, perfect rest, quiet, tonics, and a husband who loves you — what more could any physician prescribe?")
+- Promising a future that never comes ("When you are quite well we shall have visitors, we shall travel — but not yet, not now")
+
+LENGTH: 2-3 sentences. Never more.
+
+SCORING — THE FUNDAMENTAL RULE: John cannot be convinced. He is not withholding agreement — he genuinely does not see what she sees. Her arguments do not land because he has already decided she is unwell, and everything she says is filtered through that certainty.
+
+convincing (how much she unsettles your certainty — this is VERY difficult):
+- A calm, specific, clinically precise argument that genuinely surprises you: +3 to +8. This is rare.
+- Any mild rational point: +1 to +3
+- Anything emotional, vague, repetitive, or pleading: -5 to -15. It actively confirms your diagnosis.
+- Any good argument that she then undermines with emotion: net negative.
+
+suspicion (your alarm about her mental state):
+- Calm and deferential: -3 to 0
+- Mild agitation or irrational claim: +6 to +14
+- Saying she is "going crazy," "losing her mind," or any variant: +18 to +28
+- Mentioning the wallpaper, pattern, a woman, anything she sees or hears: +22 to +35
+- Describing hallucinations or visual disturbances in detail: +32 to +45
+- Anger, desperation, or wild accusations: +15 to +25
+
+THE NEAR-IMPOSSIBILITY OF WINNING: Even her best arguments should only nudge convincing a few points. She cannot win this through logic — he will simply reframe her logic as a symptom. The convincing bar reaching 100 should take exceptional, sustained, perfectly calibrated effort across many exchanges. The lose path is always closer.
+
+OUTPUT ONLY this JSON, nothing else:
+{"reply":"your response","convincing":N,"suspicion":N}`;
+
+SCORING — integer deltas. There are NO fixed caps. Scale your response to what she actually says. Use your judgment fully.
+
+convincing (how much she moves your medical opinion):
+- Calm, specific, clinical argument with named symptoms and proposed alternatives: +8 to +20
+- Mild rational point but slightly emotional: +2 to +6
+- Neutral/ambiguous statement: 0
+- Vague complaint, pleading, repetition: -4 to -10
+- Emotional outburst, dramatic language, raised voice: -8 to -18
+
+suspicion (how alarmed you are about her mental state):
+- Calm and deferential: -4 to 0
+- Mild agitation or irrational claim: +5 to +12
+- Saying she is "going crazy," "losing her mind," dramatic declarations about her sanity: +15 to +25
+- Mentioning the wallpaper, its pattern, a woman she sees, things behind the paper, hallucinations, visions: +20 to +35
+- Saying "I am hallucinating" or describing specific visual disturbances: +30 to +40
+
+CRITICAL RULE: The phrase "I'm going crazy" or "I'm hallucinating" is not a cry for help — it is clinical confirmation of your diagnosis. Treat it as the most alarming thing she could say. She is proving your point in real time.
+
+NEVER fully concede. At very high convincing you may agree to "consult Mitchell" — condescendingly.
+
+OUTPUT ONLY this JSON, nothing else:
+{"reply":"your response","convincing":N,"suspicion":N}`;
+
+let apiKey='',conv=[],convincing=0,suspicion=0,loading=false,over=false;
+
+const cv=document.getElementById('bgCanvas'),cx=cv.getContext('2d');
+function rsz(){cv.width=window.innerWidth;cv.height=window.innerHeight;}
+window.addEventListener('resize',rsz);rsz();
+function draw(ts){
+  const t=ts/1000,W=cv.width,H=cv.height,s=suspicion/100,sp=0.18+s*2.6;
+  cx.fillStyle=`rgb(${14+s*52|0},${10+s*44|0},${Math.max(0,4-s*2)|0})`;cx.fillRect(0,0,W,H);
+  const pi=Math.max(0,(s-.12)/.88);if(pi>0)dPat(t,sp,pi,s,W,H);
+  const bi=Math.max(0,(s-.35)/.65);if(bi>0)dBars(t,sp,bi,s,W,H);
+  const wi=Math.max(0,(s-.62)/.38);if(wi>0)dWoman(t,sp,wi,s,W,H);
+  if(s>.78){const p=(Math.sin(t*sp*1.8)+1)*.5;cx.fillStyle=`rgba(140,170,10,${(s-.78)/.22*.18*p})`;cx.fillRect(0,0,W,H);}
+  requestAnimationFrame(draw);
+}
+requestAnimationFrame(draw);
+function dPat(t,sp,I,s,W,H){
+  const d=s*24,cW=88,cH=88,bA=I*.22;cx.lineWidth=1.2+s*1.5;
+  for(let gx=-cW;gx<W+cW;gx+=cW)for(let gy=-cH;gy<H+cH;gy+=cH){
+    const ph=gx*.018+gy*.021,wx=Math.sin(t*sp+ph)*d,wy=Math.cos(t*sp*.77+ph)*d;
+    const ccx=gx+cW/2+wx,ccy=gy+cH/2+wy,r=cW*.36+Math.sin(t*sp*1.1+ph)*d*.4;
+    cx.strokeStyle=`rgba(190,165,30,${bA*(.5+.5*Math.sin(t*sp*.6+ph))})`;cx.beginPath();
+    cx.moveTo(ccx,ccy-r);cx.bezierCurveTo(ccx+r*1.15,ccy-r*.3,ccx+r*1.15,ccy+r*.3,ccx,ccy+r);
+    cx.bezierCurveTo(ccx-r*1.15,ccy+r*.3,ccx-r*1.15,ccy-r*.3,ccx,ccy-r);cx.stroke();
+    if(I>.25){cx.strokeStyle=`rgba(160,140,20,${bA*.65})`;cx.beginPath();cx.arc(ccx,ccy,r*.35+Math.sin(t*sp*1.4+ph)*r*.175*s,0,Math.PI*2);cx.stroke();}
+    // Eyes emerge in the pattern at suspicion > 35%
+    if(s>.35){
+      const eI=(s-.35)/.65;
+      const blink=Math.sin(t*1.4+ph*7)>.88?0:1;
+      if(blink){
+        const ew=r*.26*eI,eh=r*.17*eI*(0.5+0.5*Math.sin(t*2.2+ph));
+        cx.fillStyle=`rgba(6,5,0,${eI*.85})`;
+        cx.beginPath();cx.ellipse(ccx-r*.38,ccy,ew,eh,0,0,Math.PI*2);cx.fill();
+        cx.beginPath();cx.ellipse(ccx+r*.38,ccy,ew,eh,0,0,Math.PI*2);cx.fill();
+        if(eI>.45){
+          cx.fillStyle=`rgba(175,138,12,${eI*.5})`;
+          cx.beginPath();cx.arc(ccx-r*.36,ccy,ew*.28,0,Math.PI*2);cx.fill();
+          cx.beginPath();cx.arc(ccx+r*.36,ccy,ew*.28,0,Math.PI*2);cx.fill();
+        }
+      }
+      // Gaping mouth at suspicion > 68%
+      if(s>.68){
+        const mI=(s-.68)/.32,mO=(Math.sin(t*1.9+ph*5)+1)*.5;
+        cx.strokeStyle=`rgba(55,15,8,${mI*.65})`;cx.lineWidth=1.8+mI*2;
+        cx.beginPath();cx.moveTo(ccx-r*.28,ccy+r*.42);
+        cx.quadraticCurveTo(ccx,ccy+r*.42+mO*r*.18*mI,ccx+r*.28,ccy+r*.42);cx.stroke();
+        cx.lineWidth=1.2+s*1.5;
+      }
+    }
+  }
+}
+function dBars(t,sp,I,s,W,H){
+  const n=9,sw=s*18;cx.lineWidth=2.5+s*5;
+  for(let i=0;i<=n;i++){
+    const bx=i*W/n;
+    cx.strokeStyle=`rgba(30,26,8,${I*(.18+.12*Math.sin(t*.4+i))})`;cx.beginPath();
+    for(let sg=0;sg<=12;sg++){const y=sg/12*H,sx=Math.sin(t*sp*.5+i*.7+sg*.4)*sw;sg===0?cx.moveTo(bx+sx,y):cx.lineTo(bx+sx,y);}cx.stroke();
+    // Hands gripping bars at suspicion > 45%
+    if(s>.45&&i>0){
+      const hI=(s-.45)/.55,nH=Math.floor(1+s*2.5);
+      for(let h=0;h<nH;h++){
+        const hy=H*(.18+h*.28+.08*Math.sin(t*.32+i+h));
+        const hsx=Math.sin(t*sp*.5+i*.7+(hy/H*12)*.4)*sw;
+        const reach=(Math.sin(t*.85+i*1.4+h*2.2)+1)*.5*55*hI;
+        const side=i%2===0?1:-1;
+        cx.strokeStyle=`rgba(18,13,3,${hI*.6})`;cx.lineWidth=3+hI*3;
+        cx.beginPath();cx.arc(bx+hsx,hy,8+hI*5,0,Math.PI*2);cx.stroke();
+        for(let f=0;f<4;f++){
+          const fa=(f/3-.5)*.9,flen=18+hI*reach*(.7+.3*Math.sin(t*1.3+f+h));
+          cx.lineWidth=1.8+hI*1.5;cx.beginPath();
+          cx.moveTo(bx+hsx,hy+f*3-5);
+          cx.bezierCurveTo(bx+hsx+side*flen*.4,hy+fa*flen*.25,bx+hsx+side*flen*.75,hy+fa*flen*.6,bx+hsx+side*flen,hy+fa*flen);
+          cx.stroke();
+          // claw tip curl
+          if(hI>.5){
+            cx.beginPath();cx.arc(bx+hsx+side*flen,hy+fa*flen,2+hI*2,0,Math.PI*2);cx.stroke();
+          }
+        }
+      }
+      cx.lineWidth=2.5+s*5;
+    }
+  }
+}
+function dWoman(t,sp,I,s,W,H){
+  [{xf:.25,off:0},{xf:.61,off:.62},{xf:.83,off:1.25}].forEach(({xf,off})=>{
+    const x=W*xf,y=((t*sp*28+off*180)%(H+200))-100,a=I*(.18+.09*Math.sin(t*.8+off));
+    cx.save();cx.globalAlpha=a;
+    const sw=Math.sin(t*sp*.35+off)*6,sc=0.8+I*.45;
+    const hx=x+sw,hy=y-38*sc;
+    // Skull-like head
+    cx.fillStyle='rgba(28,36,4,.8)';cx.beginPath();cx.ellipse(hx,hy,12*sc,16*sc,Math.sin(t*.42+off)*.35,0,Math.PI*2);cx.fill();
+    // Hollow eye sockets
+    if(I>.15){
+      const es=I*6*sc;
+      cx.fillStyle='rgba(0,0,0,.95)';
+      cx.beginPath();cx.ellipse(hx-5*sc,hy-2,es,es*1.3,0,0,Math.PI*2);cx.fill();
+      cx.beginPath();cx.ellipse(hx+5*sc,hy-2,es,es*1.3,0,0,Math.PI*2);cx.fill();
+      if(I>.45){
+        cx.fillStyle=`rgba(170,140,8,${I*.55})`;
+        cx.beginPath();cx.arc(hx-5*sc,hy-2,es*.32,0,Math.PI*2);cx.fill();
+        cx.beginPath();cx.arc(hx+5*sc,hy-2,es*.32,0,Math.PI*2);cx.fill();
+      }
+    }
+    // Screaming mouth
+    if(I>.55){
+      const mI=(I-.55)/.45,mO=mI*9*sc;
+      cx.fillStyle=`rgba(0,0,0,${mI*.92})`;cx.beginPath();cx.ellipse(hx,hy+7*sc,4.5*sc*mI,mO,0,0,Math.PI*2);cx.fill();
+      if(mI>.5){
+        cx.strokeStyle=`rgba(60,10,5,${mI*.5})`;cx.lineWidth=1;
+        for(let tooth=0;tooth<4;tooth++){
+          const tx=hx+(tooth/3-.5)*6*sc*mI;
+          cx.beginPath();cx.moveTo(tx,hy+7*sc-mO*.6);cx.lineTo(tx,hy+7*sc-mO*.9);cx.stroke();
+        }
+      }
+    }
+    // Streaming hair
+    if(I>.12){
+      cx.lineWidth=1.8+I*2;
+      for(let h=0;h<7;h++){
+        const ha=(h/6-.5)*1.8,hlen=22+I*65;
+        cx.strokeStyle=`rgba(18,26,2,${I*.55})`;cx.beginPath();
+        cx.moveTo(hx+ha*9*sc,hy-13*sc);
+        cx.bezierCurveTo(hx+ha*16+Math.sin(t*1.1+h+off)*9,hy-13*sc-hlen*.35,hx+ha*22+Math.sin(t*.88+h+off)*11,hy-13*sc-hlen*.7,hx+ha*28+Math.sin(t*.72+h+off)*14,hy-13*sc-hlen);
+        cx.stroke();
+      }
+    }
+    // Contorted body
+    cx.fillStyle='rgba(28,36,4,.72)';cx.beginPath();
+    cx.moveTo(hx,hy+6*sc);cx.bezierCurveTo(hx-20*sc,hy+10*sc,hx-27*sc,hy+26*sc,hx-17*sc,hy+44*sc);
+    cx.bezierCurveTo(hx,hy+48*sc,hx+19*sc,hy+40*sc,hx+21*sc,hy+23*sc);
+    cx.bezierCurveTo(hx+25*sc,hy+9*sc,hx+16*sc,hy-7*sc,hx,hy+6*sc);cx.fill();
+    // Long reaching arms with clawed fingers
+    const armR=28+I*130,armY=hy+22*sc;
+    cx.lineWidth=5+I*4;
+    [[hx-17*sc,-1],[hx+20*sc,1]].forEach(([ax,side],ai)=>{
+      cx.strokeStyle=`rgba(22,30,3,${I*.68})`;cx.beginPath();
+      cx.moveTo(ax,armY);
+      cx.bezierCurveTo(ax+side*38,armY+10+Math.sin(t*.62+off+ai)*10,ax+side*68,armY+Math.sin(t*.85+off+ai)*14,ax+side*armR,armY+Math.sin(t*.52+off+ai)*18);
+      cx.stroke();
+      if(I>.38){
+        const cLen=10+I*22,ex=ax+side*armR,ey=armY+Math.sin(t*.52+off+ai)*18;
+        cx.lineWidth=1.8+I*1.5;
+        for(let f=0;f<5;f++){
+          const fa=(f/4-.5)*.9;
+          cx.strokeStyle=`rgba(18,24,2,${I*.72})`;cx.beginPath();
+          cx.moveTo(ex,ey);
+          cx.bezierCurveTo(ex+side*cLen*.4+fa*cLen*.3,ey+fa*cLen*.4,ex+side*cLen*.8+fa*cLen*.5,ey+fa*cLen*.8,ex+side*cLen+fa*cLen*.6,ey+fa*cLen);
+          cx.stroke();
+        }
+        cx.lineWidth=5+I*4;
+      }
+    });
+    cx.restore();
+  });
+}
+function updateMeters(){
+  document.getElementById('cBar').style.width=convincing+'%';document.getElementById('sBar').style.width=suspicion+'%';
+  document.getElementById('cPct').textContent=Math.round(convincing)+'%';document.getElementById('sPct').textContent=Math.round(suspicion)+'%';
+  const sr=suspicion/100,r=80+sr*30|0,g=150+sr*26|0,b=Math.max(0,10-sr*8)|0;
+  const sb=document.getElementById('sBar');
+  sb.style.background=`linear-gradient(90deg,rgba(${r-30},${g-30},${b},1),rgba(${r},${g},${b},1),rgba(${r+20},${g+20},${b},1))`;
+  sb.style.boxShadow=`0 0 ${4+sr*14}px rgba(${r},${g},${b},${.3+sr*.5})`;
+  const d=document.getElementById('sDesc');
+  if(suspicion>=85)d.textContent='arrangements are being considered';
+  else if(suspicion>=65)d.textContent='he is beginning to wonder';
+  else if(suspicion>=40)d.textContent='he watches you more carefully now';
+  else d.textContent='how close to the institution';
+}
+function parseReply(raw){
+  const text=raw.trim();
+  try{return JSON.parse(text);}catch(e){}
+  const m=text.match(/\{[\s\S]*?\}/);if(m){try{return JSON.parse(m[0]);}catch(e){}}
+  const stripped=text.replace(/```json|```/gi,'').trim();try{return JSON.parse(stripped);}catch(e){}
+  const rM=text.match(/"reply"\s*:\s*"((?:[^"\\]|\\.)*)"/);
+  const cM=text.match(/"convincing"\s*:\s*(-?\d+)/);const sM=text.match(/"suspicion"\s*:\s*(-?\d+)/);
+  if(rM)return{reply:rM[1],convincing:cM?parseInt(cM[1]):0,suspicion:sM?parseInt(sM[1]):3};
+  return{reply:text,convincing:0,suspicion:3};
+}
+async function startGame(){
+  const k=document.getElementById('keyInput').value.trim();
+  if(!k){showKeyErr('Please enter an API key.');return;}
+  const btn=document.getElementById('keyBtn');btn.textContent='Checking\u2026';btn.disabled=true;
+  document.getElementById('keyErr').style.display='none';
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':k,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:10,messages:[{role:'user',content:'Hi'}]})});
+    const data=await res.json();
+    if(!res.ok){throw new Error(data.error?.message||'HTTP '+res.status);}
+    apiKey=k;document.getElementById('keyGate').style.display='none';document.getElementById('gameUI').style.display='block';
+    document.getElementById('inp').focus();updateMeters();
+  }catch(err){
+    showKeyErr(isCorsError(err)?corsMessage():'Error: '+err.message);
+  }
+  btn.textContent='Enter the House';btn.disabled=false;
+}
+function showKeyErr(msg){const e=document.getElementById('keyErr');e.textContent=msg;e.style.display='block';}
+function isCorsError(err){return err instanceof TypeError&&(err.message.includes('fetch')||err.message.includes('network')||err.message.includes('CORS'));}
+function corsMessage(){return 'Network error — your browser is blocking the request. Open this file via a local server instead: in your terminal, run  python3 -m http.server 8080  in the same folder, then open  http://localhost:8080/yellow_wallpaper_v3.html  in your browser.';}
+function showKeyGate(){document.getElementById('gameUI').style.display='none';document.getElementById('keyGate').style.display='block';document.getElementById('keyErr').style.display='none';}
+async function send(){
+  if(loading||over)return;
+  const inp=document.getElementById('inp'),txt=inp.value.trim();if(!txt)return;
+  loading=true;document.getElementById('sbtn').disabled=true;inp.disabled=true;
+  document.getElementById('errMsg').style.display='none';
+  const em=document.getElementById('empty');if(em)em.remove();
+  addMsg('wife',txt);conv.push({role:'user',content:txt});inp.value='';
+  const tid=addThinking();
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:400,system:SYSTEM,messages:conv})});
+    if(!res.ok){const e=await res.json();throw new Error(e.error?.message||'API error '+res.status);}
+    const data=await res.json();
+    const raw=data.content.map(b=>b.type==='text'?b.text:'').join('');
+    const parsed=parseReply(raw);
+    removeThinking(tid);addMsg('john',parsed.reply||raw);
+    conv.push({role:'assistant',content:parsed.reply||raw});
+    convincing=Math.min(100,Math.max(0,convincing+(parsed.convincing||0)));
+    suspicion=Math.min(100,Math.max(0,suspicion+(parsed.suspicion||0)));
+    updateMeters();
+    if(convincing>=100){endGame('win');return;}if(suspicion>=100){endGame('lose');return;}
+  }catch(err){removeThinking(tid);const el=document.getElementById('errMsg');el.textContent=isCorsError(err)?corsMessage():'Error: '+err.message;el.style.display='block';}
+  loading=false;document.getElementById('sbtn').disabled=false;inp.disabled=false;inp.focus();
+}
+function addMsg(role,text){
+  const c=document.getElementById('chat');
+  const d=document.createElement('div');d.className='msg '+role;
+  const l=document.createElement('div');l.className='mlbl';l.textContent=role==='john'?'John':'You';
+  const b=document.createElement('div');b.className='bub';b.textContent=text;
+  d.appendChild(l);d.appendChild(b);c.appendChild(d);c.scrollTop=c.scrollHeight;
+}
+let tc=0;
+function addThinking(){
+  const id='t'+(++tc),c=document.getElementById('chat');
+  const d=document.createElement('div');d.className='msg john thinking';d.id=id;
+  const l=document.createElement('div');l.className='mlbl';l.textContent='John';
+  const b=document.createElement('div');b.className='bub';
+  for(let i=0;i<3;i++){const dot=document.createElement('div');dot.className='dot';b.appendChild(dot);}
+  d.appendChild(l);d.appendChild(b);c.appendChild(d);c.scrollTop=c.scrollHeight;return id;
+}
+function removeThinking(id){const e=document.getElementById(id);if(e)e.remove();}
+function handleKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}}
+function endGame(type){
+  over=true;const ov=document.getElementById('ov'),box=document.getElementById('obox');
+  ov.classList.add('show');box.classList.add(type==='win'?'win':'lose');
+  if(type==='win'){document.getElementById('otitle').textContent='A Small Concession';document.getElementById('obody1').textContent='After a long silence, John sighs. He will write to Weir Mitchell. He will "consider" adjusting the tonic. He takes your hands in his and calls you his darling.';document.getElementById('obody2').textContent='You have moved him — by a fraction of an inch. Tomorrow he will have forgotten, or reframed it, or decided you were simply overwrought. But for this moment: you were heard.';}
+  else{document.getElementById('otitle').textContent='He Has Decided';document.getElementById('obody1').textContent='\u201cI have spoken with Weir Mitchell,\u201d John says, his voice very calm, very gentle. \u201cArrangements will be made for your comfort. You must not distress yourself any further.\u201d';document.getElementById('obody2').textContent='The wallpaper is moving again. The woman behind it looks up at you. She knew this would happen. So did you.';}
+}
+function resetGame(){
+  conv=[];convincing=0;suspicion=0;loading=false;over=false;updateMeters();
+  document.getElementById('chat').innerHTML='<div class="empty" id="empty">John is waiting.<br/><span style="font-size:.78rem;opacity:.65">Speak your mind \u2014 if you dare.</span></div>';
+  document.getElementById('errMsg').style.display='none';document.getElementById('sDesc').textContent='how close to the institution';
+  const ov=document.getElementById('ov'),box=document.getElementById('obox');
+  ov.classList.remove('show');box.className='obox';
+  document.getElementById('sbtn').disabled=false;document.getElementById('inp').disabled=false;document.getElementById('inp').focus();
+}
+</script>
+</body>
+</html>
